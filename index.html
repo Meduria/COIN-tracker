@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CoinTracker</title>
+    <style>
+        /* General styles */
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f7fc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        h1 {
+            font-size: 32px;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 800px;
+            text-align: center;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        input[type="text"] {
+            padding: 12px;
+            width: 60%;
+            margin-right: 15px;
+            font-size: 16px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            box-sizing: border-box;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus {
+            border-color: #4CAF50;
+            outline: none;
+        }
+
+        button {
+            padding: 12px 30px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .price-info {
+            margin-top: 20px;
+            font-size: 24px;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .currency-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .currency-item {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .currency-item span {
+            display: block;
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        footer {
+            position: absolute;
+            bottom: 10px;
+            width: 100%;
+            text-align: center;
+            font-size: 14px;
+            color: #777;
+        }
+
+        footer p {
+            margin: 0;
+        }
+
+        /* Media queries */
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+
+            input[type="text"] {
+                width: 100%;
+                margin-right: 0;
+                margin-bottom: 15px;
+            }
+
+            button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>CoinTracker</h1>
+
+    <div class="input-group">
+        <input type="text" id="currencyName" placeholder="Enter cryptocurrency name (e.g. Bitcoin)" />
+        <button onclick="getCurrencyPrice()">Get Price</button>
+    </div>
+
+    <div id="priceInfo" class="price-info"></div>
+
+    <h3>Top Cryptocurrencies & Metals</h3>
+    <div class="currency-list" id="currencyList">
+        <!-- Display currencies and metals here -->
+    </div>
+</div>
+
+<footer>
+    <p>Created by Omar Momen</p>
+</footer>
+
+<script>
+    const API_URL = 'https://api.coingecko.com/api/v3';
+
+    // Function to fetch cryptocurrency price by name
+    async function getCurrencyPrice() {
+        const currencyName = document.getElementById('currencyName').value.trim().toLowerCase();
+
+        if (!currencyName) {
+            alert('Please enter a cryptocurrency name.');
+            return;
+        }
+
+        try {
+            const response = await fetch(`${API_URL}/coins/markets?vs_currency=usd&ids=${currencyName}`);
+            const data = await response.json();
+
+            if (data.length === 0) {
+                alert('Currency not found.');
+                return;
+            }
+
+            const price = data[0].current_price;
+            const currencyNameFormatted = data[0].name;
+
+            document.getElementById('priceInfo').innerHTML = `${currencyNameFormatted}: $${price.toFixed(2)}`;
+        } catch (error) {
+            alert('Error fetching data. Please try again.');
+        }
+    }
+
+    // Function to fetch and display a list of top currencies and metals
+    async function getTopCurrencies() {
+        try {
+            const response = await fetch(`${API_URL}/coins/markets?vs_currency=usd&ids=bitcoin,ethereum,ripple,litecoin,cardano,gold,silver`);
+            const data = await response.json();
+
+            let htmlContent = '';
+            data.forEach(item => {
+                htmlContent += `
+                    <div class="currency-item">
+                        <span><strong>${item.name}</strong></span>
+                        <span>Price: $${item.current_price.toFixed(2)}</span>
+                    </div>
+                `;
+            });
+
+            document.getElementById('currencyList').innerHTML = htmlContent;
+        } catch (error) {
+            console.error('Error fetching top currencies:', error);
+        }
+    }
+
+    // Call the function to display top currencies and metals on page load
+    getTopCurrencies();
+</script>
+
+</body>
+</html>
